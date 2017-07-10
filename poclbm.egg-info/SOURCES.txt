@@ -1,0 +1,8 @@
+README
+poclbm.py
+setup.py
+poclbm.egg-info/PKG-INFO
+poclbm.egg-info/SOURCES.txt
+poclbm.egg-info/dependency_links.txt
+poclbm.egg-info/requires.txt
+poclbm.egg-info/top_level.txt
