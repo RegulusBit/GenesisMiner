@@ -10,6 +10,7 @@ from time import sleep, time
 from util import uint32, Object, bytereverse, tokenize, \
 	bytearray_to_uint32
 import sys
+from log import  say_line
 
 
 PYOPENCL = False
@@ -21,7 +22,7 @@ try:
 	import pyopencl as cl
 	PYOPENCL = True
 except ImportError:
-	print '\nNo PyOpenCL\n'
+	say_line('No PyOpenCL')
 
 if PYOPENCL:
 	try:
@@ -29,9 +30,9 @@ if PYOPENCL:
 		if len(platforms):
 			OPENCL = True
 		else:
-			print '\nNo OpenCL platforms\n'
+			say_line('No OpenCL platforms')
 	except Exception:
-		print '\nNo OpenCL\n'
+		say_line('No OpenCL')
 
 def vectors_definition():
 	if MACOSX:
@@ -58,17 +59,17 @@ if OPENCL:
 		from ctypes import sizeof, byref, c_int, cast
 		from collections import namedtuple
 		if ADL_Main_Control_Create(ADL_Main_Memory_Alloc, 1) != ADL_OK:
-			print "\nCouldn't initialize ADL interface.\n"
+			say_line("\nCouldn't initialize ADL interface.\n")
 		else:
 			ADL = True
 			adl_lock = Lock()
 	except ImportError:
 		if has_amd():
-			print '\nWARNING: no adl3 module found (github.com/mjmvisser/adl3), temperature control is disabled\n'
+			say_line('\nWARNING: no adl3 module found (github.com/mjmvisser/adl3), temperature control is disabled\n')
 	except OSError:# if no ADL is present i.e. no AMD platform
-		print '\nWARNING: ADL missing (no AMD platform?), temperature control is disabled\n'
+		say_line('\nWARNING: ADL missing (no AMD platform?), temperature control is disabled\n')
 else:
-	print "\nNot using OpenCL\n"
+	say_line("\nNot using OpenCL\n")
 
 def shutdown():
 	if ADL:
@@ -88,9 +89,9 @@ def initialize(options):
 	platforms = cl.get_platforms()
 
 	if options.platform >= len(platforms) or (options.platform == -1 and len(platforms) > 1):
-		print 'Wrong platform or more than one OpenCL platforms found, use --platform to select one of the following\n'
+		say_line('Wrong platform or more than one OpenCL platforms found, use --platform to select one of the following\n')
 		for i in xrange(len(platforms)):
-			print '[%d]\t%s' % (i, platforms[i].name)
+			say_line('[%d]\t%s' , (i, platforms[i].name))
 		sys.exit()
 
 	if options.platform == -1:
@@ -99,10 +100,10 @@ def initialize(options):
 	devices = platforms[options.platform].get_devices()
 
 	if not options.device and devices:
-		print '\nOpenCL devices:\n'
+		say_line('OpenCL devices:')
 		for i in xrange(len(devices)):
-			print '[%d]\t%s' % (i, devices[i].name)
-		print '\nNo devices specified, using all GPU devices\n'
+			say_line('[%d]\t%s' , (i, devices[i].name))
+		say_line('No devices specified, using all GPU devices')
 
 	miners = [
 		OpenCLMiner(i, options)
@@ -120,6 +121,9 @@ def initialize(options):
 		miners[i].vectors = options.vectors[min(i, len(options.vectors) - 1)]
 		miners[i].cutoff_temp = options.cutoff_temp[min(i, len(options.cutoff_temp) - 1)]
 		miners[i].cutoff_interval = options.cutoff_interval[min(i, len(options.cutoff_interval) - 1)]
+
+	for miner in miners:
+		say_line("miner included in the List: %s" , (miner.device_name))
 	return miners
 
 
@@ -266,7 +270,7 @@ class OpenCLMiner(Miner):
 				result.nonces = output[:]
 				result.job_id = work.job_id
 				result.extranonce2 = work.extranonce2
-				result.server = work.server
+				result.container = work.container
 				result.miner = self
 				self.switch.put(result)
 				output[:] = b'\x00' * len(output)

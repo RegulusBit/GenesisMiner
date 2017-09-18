@@ -163,4 +163,8 @@ ENV/
 # mkdocs documentation
 /site
 
+#poclbm Miner config file
+.elf
+
+
 # End of https://www.gitignore.io/api/python,pycharm

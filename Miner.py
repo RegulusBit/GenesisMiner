@@ -1,6 +1,7 @@
 from Queue import Queue
 from threading import Thread
 from time import time
+from log import say_line
 
 
 class Miner(object):
@@ -19,6 +20,7 @@ class Miner(object):
 
 	def start(self):
 		self.should_stop = False
+		say_line("starting miner: %s" , (self.device_name))
 		Thread(target=self.mining_thread).start()
 		self.start_time = time()
 
